@@ -1,0 +1,40 @@
+name: Verify and release plugin
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.1', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble pinned telephone libraries
+        run: python3 tools/vendor.py
+      - name: Check PHP syntax
+        run: docker run --rm -v "$PWD:/app" -w /app php:${{ matrix.php }}-cli sh -c 'find tms-shiptimize-fix -name "*.php" -print0 | xargs -0 -n1 php -l'
+      - name: Test phone and checkout logic
+        run: docker run --rm -v "$PWD:/app" -w /app php:${{ matrix.php }}-cli php tests/phone-checkout.php
+      - name: Test release updates
+        run: docker run --rm -v "$PWD:/app" -w /app php:${{ matrix.php }}-cli php tests/github-updates.php
+  release:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble pinned telephone libraries
+        run: python3 tools/vendor.py
+      - name: Build installable ZIP and verify tag matches plugin
+        run: python3 tools/package.py "${GITHUB_REF_NAME}"
+      - name: Publish stable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/tms-shiptimize-fix.zip --verify-tag --title "$GITHUB_REF_NAME" --generate-notes

@@ -1,0 +1,16 @@
+Bundled dependencies (no separate WordPress plugins needed):
+
+giggsey/libphonenumber-for-php-lite 9.0.42
+Source: https://github.com/giggsey/libphonenumber-for-php-lite
+Commit: 6b9f5e5e2ff347b566ee6ea558cd56f878a3ea2e
+License: Apache-2.0; see vendor/phone/LICENSE.txt
+Namespace scoped to TMSVendor\Phone to avoid collisions with other plugins.
+
+symfony/polyfill-mbstring v1.43.3
+Source: https://github.com/symfony/polyfill-mbstring
+Commit: 122889ed24dc000165bcbfd77ec412f15cbdfc6a
+License: MIT; see vendor/mbstring/LICENSE
+Namespace scoped to TMSVendor\Mbstring; bootstrap supplies missing mb_* functions.
+
+Changes: namespace references prefixed for this plugin. Original copyright and
+license files are retained. Phone metadata must be maintained with future releases.

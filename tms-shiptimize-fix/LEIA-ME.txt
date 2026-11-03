@@ -1,0 +1,91 @@
+TMS — Shiptimize Address Fix 1.2.0
+
+Um unico complemento para Shiptimize 4.1.4 e WooCommerce Checkout Blocks.
+Requisitos: PHP 8.1+, WordPress 6.5+, WooCommerce 8.9+ com a API de campos adicionais.
+Sem subscricoes, servicos externos de validacao ou outro plugin de telefones.
+Consulta o GitHub para procurar releases estaveis, sem enviar dados das encomendas.
+
+INSTALAR / ATUALIZAR
+1. Testar numa copia da loja antes de usar na loja real.
+2. WordPress > Plugins > Adicionar plugin > Carregar plugin: selecionar
+   tms-shiptimize-fix.zip da release. Se ja tens uma versao anterior, substituir a existente.
+   Manter WooCommerce e Shiptimize ativos.
+3. No editor da pagina de checkout, selecionar o bloco de morada de entrega e
+   confirmar que o campo Telefone esta visivel (preferencialmente obrigatorio).
+   Este complemento exige um contacto para encomendas fisicas, mesmo que o campo
+   nativo esteja configurado como opcional. Nao torna visivel um telefone oculto.
+4. Abrir o checkout como cliente e verificar o campo nativo adicional
+   "Pais do telefone / indicativo", no fim da secao da morada. A posicao exata
+   e controlada pelo WooCommerce: e um seletor separado, sem bandeiras dentro do
+   campo de telefone. Aparece nas moradas de entrega e faturacao quando visiveis.
+
+COMO O CLIENTE USA
+- Telefone local: selecionar o pais do TELEFONE. Ex.: Portugal (+351), 912345678;
+  United Kingdom (+44), 07400123456. Pode manter o zero nacional quando adequado.
+- Telefone internacional: pode escrever +351912345678 ou 00351912345678 sem
+  selecionar o pais. O indicativo escrito prevalece sobre o seletor.
+- O pais do telefone nao e deduzido da morada de entrega.
+- A validacao ocorre ao finalizar a encomenda, antes do pagamento. Um erro
+  apresenta uma mensagem do checkout. Nao ha validacao em tempo real ao escrever.
+- Numeros validos sao guardados na encomenda em formato internacional E.164.
+- Sao aceites moveis e fixos. Nao sao aceites extensoes ou letras.
+- Se forem fornecidos telefones de entrega E faturacao, ambos sao validados.
+- Encomendas so com produtos virtuais nao exigem telefone atraves deste plugin.
+- Idioma das etiquetas e mensagens: portugues quando a localizacao comeca por
+  pt; ingles nos restantes casos. Nomes dos paises seguem o WooCommerce.
+
+SHIPTIMIZE
+- Apenas quando o adaptador WooShiptimizeOrder le a encomenda: compacta codigos
+  postais GB reconheciveis (WV6 9 PQ -> WV69PQ) e normaliza telefones internacionais.
+- Nao altera os codigos postais guardados, faturas ou a autenticacao da API.
+- Encomendas antigas com telefone local e sem indicativo continuam a precisar
+  de correcao manual. O seletor nao adivinha numeros de encomendas anteriores.
+- Se a encomenda ja existe na Shiptimize, atualizar/reexportar e confirmar os
+  dados no painel; imprimir uma etiqueta pode reutilizar os dados antigos.
+
+TESTES ANTES DE ATIVAR NA LOJA REAL
+- Checkout Blocks em computador e telemovel, como convidado e cliente com conta.
+- Numero local GB com seletor GB, local PT com seletor PT e internacional +351
+  numa morada GB. Confirmar o valor internacional na encomenda e na Shiptimize.
+- Numero local sem seletor e numero demasiado curto: devem dar mensagem antes
+  do pagamento; corrigir e tentar de novo sem perder os restantes campos.
+- Entrega e faturacao diferentes; opcao de usar a mesma morada; mudar de pais.
+- Campo de telefone escondido/opcional e dados de clientes regressados.
+- Compra virtual, meios de pagamento habituais e checkout expresso, se existir.
+- Confirmar que CP PT fica intacto e CP GB so muda no envio a Shiptimize.
+- Usar pagamento de teste. Criar uma etiqueta real pode ter custos.
+
+VERIFICACAO EFETUADA
+- Testes locais PHP com cenarios de numeracao internacional e simulacoes do
+  percurso de encomendas: conversao, rejeicao, gravacao e isolamento Shiptimize.
+- Ainda nao testado numa instalacao WordPress/WooCommerce real nem com o tema,
+  pagamentos, navegador ou painel Shiptimize da tua loja. Os testes locais nao
+  demonstram a compatibilidade completa da loja: executar os testes acima.
+
+LIMITES
+- Esta versao NAO verifica existencia de codigos postais numa base externa,
+  nem rua/porta, nem correspondencia cidade/CP. Nao inclui Postcodes.io.
+- A biblioteca valida planos de numeracao, nao a existencia, titularidade ou
+  capacidade do telefone receber SMS/chamadas. Os metadados exigem atualizacoes.
+- Checkout classico: continua a exigir o indicativo escrito no telefone; o novo
+  seletor destina-se ao Checkout Blocks. Nao mudar para checkout classico sem rever.
+- Campos personalizados da Shiptimize que substituam o telefone ou CP depois da
+  leitura normal podem contornar a correcao. Rever configuracoes personalizadas.
+- Atualizacoes da Shiptimize que mudem o adaptador exigem rever a integracao.
+
+DESATIVACAO E DADOS
+- Desativar em Plugins remove o seletor e estas validacoes.
+- Os telefones internacionais ja guardados nas encomendas mantem-se.
+- O WooCommerce guarda tambem a selecao do pais como campo adicional da morada
+  na encomenda e, conforme o caso, na conta/sessao do cliente.
+- Nao sao criados logs de telefones nem enviados dados para APIs de validacao.
+
+ATUALIZACOES GITHUB
+- Repositorio publico: https://github.com/diegojover/tms-shiptimize-fix
+- A versao 1.2.0 precisa de ser instalada manualmente uma vez.
+- Depois, o WordPress consulta releases estaveis com cache ate seis horas.
+- So considera releases com etiqueta vX.Y.Z e ZIP instalavel anexado; ignora
+  rascunhos e pre-releases. Falhas de rede nao impedem o checkout.
+- As atualizacoes surgem no painel habitual. O plugin nao ativa atualizacoes
+  automaticas; a instalacao continua sob controlo do administrador.
+- O GitHub recebe o IP do servidor e cabecalhos HTTP habituais nestas consultas.
