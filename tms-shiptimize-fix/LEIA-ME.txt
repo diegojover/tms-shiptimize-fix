@@ -1,4 +1,4 @@
-TMS — Shiptimize Address Fix 1.2.0
+TMS — Shiptimize Address Fix 1.2.1
 
 Um unico complemento para Shiptimize 4.1.4 e WooCommerce Checkout Blocks.
 Requisitos: PHP 8.1+, WordPress 6.5+, WooCommerce 8.9+ com a API de campos adicionais.
@@ -20,11 +20,10 @@ INSTALAR / ATUALIZAR
    campo de telefone. Aparece nas moradas de entrega e faturacao quando visiveis.
 
 COMO O CLIENTE USA
-- Telefone local: selecionar o pais do TELEFONE. Ex.: Portugal (+351), 912345678;
-  United Kingdom (+44), 07400123456. Pode manter o zero nacional quando adequado.
+- O indicativo segue o pais da morada por defeito. Se o telefone for de outro
+  pais, escolher o respetivo indicativo no seletor.
 - Telefone internacional: pode escrever +351912345678 ou 00351912345678 sem
   selecionar o pais. O indicativo escrito prevalece sobre o seletor.
-- O pais do telefone nao e deduzido da morada de entrega.
 - A validacao ocorre ao finalizar a encomenda, antes do pagamento. Um erro
   apresenta uma mensagem do checkout. Nao ha validacao em tempo real ao escrever.
 - Numeros validos sao guardados na encomenda em formato internacional E.164.

@@ -2,7 +2,7 @@
 
 Complemento para WooCommerce Checkout Blocks e Shiptimize 4.1.4.
 
-- Seletor nativo do país do telefone, independente da morada de entrega.
+- Indicativo automático pelo país da morada, com opção de escolher outro país.
 - Validação de números fixos e móveis com libphonenumber, incluída no plugin.
 - Guarda os números das novas encomendas em formato internacional E.164.
 - Compacta códigos postais britânicos apenas quando lidos pelo adaptador Shiptimize.

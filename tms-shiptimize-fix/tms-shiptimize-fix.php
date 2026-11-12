@@ -2,7 +2,7 @@
 /**
  * Plugin Name: TMS — Shiptimize Address Fix
  * Description: GB postcodes for Shiptimize and international telephone format at checkout.
- * Version: 1.2.0
+ * Version: 1.2.1
  * Update URI: https://github.com/diegojover/tms-shiptimize-fix
  * Plugin URI: https://github.com/diegojover/tms-shiptimize-fix
  * Requires PHP: 8.1
@@ -17,6 +17,7 @@ require_once __DIR__ . '/includes/github-updates.php';
 
 final class TMS_Shiptimize_Fix {
     const FIELD = 'tms-phone/country';
+    const AUTO = 'AUTO';
 
     public static function message($english, $portuguese) {
         return strpos(determine_locale(), 'pt') === 0 ? $portuguese : $english;
@@ -26,7 +27,8 @@ final class TMS_Shiptimize_Fix {
         if (!function_exists('woocommerce_register_additional_checkout_field')) { return; }
         $util = \TMSVendor\Phone\PhoneNumberUtil::getInstance();
         $countries = WC()->countries->get_countries();
-        $options = array(array('value' => 'INTL', 'label' => self::message(
+        $automatic = self::message('Same as address country', 'Mesmo país da morada');
+        $options = array(array('value' => self::AUTO, 'label' => $automatic), array('value' => 'INTL', 'label' => self::message(
             'Number already includes +country code', 'O número já inclui +indicativo'
         )));
         // Telephone country is independent of the shop's shipping destinations.
@@ -34,16 +36,26 @@ final class TMS_Shiptimize_Fix {
             $code = $util->getCountryCodeForRegion($region);
             if ($code) { $options[] = array('value' => $region, 'label' => $name . ' (+' . $code . ')'); }
         }
+        $label = self::message(
+            'Phone country code (change only if different)',
+            'Indicativo do telefone (altere só se for diferente)'
+        );
         woocommerce_register_additional_checkout_field(array(
             'id' => self::FIELD,
-            'label' => self::message('Phone country / calling code', 'País do telefone / indicativo'),
-            'optionalLabel' => self::message('Phone country (for local numbers)', 'País do telefone (para números locais)'),
+            'label' => $label,
+            'optionalLabel' => $label,
+            'placeholder' => $automatic,
             'location' => 'address', 'type' => 'select', 'required' => false,
             'options' => $options,
         ));
     }
 
-    // Validate against numbering plans and return E.164. Never infer from address.
+    public static function enqueue_checkout_script() {
+        if (!function_exists('is_checkout') || !is_checkout()) { return; }
+        wp_enqueue_script('tms-phone-country', plugins_url('assets/phone-country.js', __FILE__), array(), '1.2.1', true);
+    }
+
+    // Validate against numbering plans and return E.164.
     public static function parse_phone($value, $region = '') {
         $value = trim((string) $value);
         $value = preg_replace('/[\s\x{00A0}().\-]+/u', '', $value);
@@ -129,6 +141,10 @@ final class TMS_Shiptimize_Fix {
             $phone = trim((string) $order->$getter('edit'));
             if ($phone === '') { continue; }
             $region = $fields->get_field_from_object(self::FIELD, $order, $type);
+            if (!$region || $region === self::AUTO) {
+                $country_getter = 'get_' . $type . '_country';
+                $region = $order->$country_getter('edit');
+            }
             $parsed = self::parse_phone($phone, $region);
             if ($parsed === false) {
                 throw new \Automattic\WooCommerce\StoreApi\Exceptions\RouteException(
@@ -158,6 +174,10 @@ foreach (array('billing', 'shipping') as $type) {
 add_action('woocommerce_after_checkout_validation', array('TMS_Shiptimize_Fix', 'validate_classic'), 20, 2);
 add_action('woocommerce_store_api_checkout_order_processed', array('TMS_Shiptimize_Fix', 'validate_blocks'), 5, 1);
 add_action('woocommerce_init', array('TMS_Shiptimize_Fix', 'register_field'));
+add_action('wp_enqueue_scripts', array('TMS_Shiptimize_Fix', 'enqueue_checkout_script'));
+add_filter('woocommerce_get_default_value_for_' . TMS_Shiptimize_Fix::FIELD, static function ($value) {
+    return $value ?: TMS_Shiptimize_Fix::AUTO;
+});
 add_action('before_woocommerce_init', static function () {
     if (class_exists('Automattic\\WooCommerce\\Utilities\\FeaturesUtil')) {
         \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);

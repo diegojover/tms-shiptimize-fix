@@ -55,8 +55,9 @@ namespace {
     foreach ($cases as $case) { check(TMS_Shiptimize_Fix::parse_phone($case[0], $case[1]), $case[2], 'parse ' . $case[0]); }
     TMS_Shiptimize_Fix::register_field();
     check($GLOBALS['field']['location'], 'address', 'Native address field');
-    check($GLOBALS['field']['options'][1]['label'], 'Portugal (+351)', 'Calling code option');
-    $order = new TestOrder(); $order->billing = '912 345 678'; $order->regions['billing'] = 'PT';
+    check($GLOBALS['field']['options'][0]['value'], 'AUTO', 'Automatic option');
+    check($GLOBALS['field']['options'][2]['label'], 'Portugal (+351)', 'Calling code option');
+    $order = new TestOrder(); $order->billing = '912 345 678'; $order->regions['billing'] = 'AUTO';
     TMS_Shiptimize_Fix::validate_blocks($order);
     check($order->billing, '+351912345678', 'Local phone persisted in E164');
     check($order->saved, 1, 'Saved');
@@ -64,8 +65,8 @@ namespace {
     TMS_Shiptimize_Fix::validate_blocks($order);
     check($order->shipping, '+447400123456', 'Separate shipping phone');
     check($order->billing, '+351912345678', 'Separate billing phone');
-    $order = new TestOrder(); $order->billing = '912345678';
-    try { TMS_Shiptimize_Fix::validate_blocks($order); throw new \RuntimeException('Missing selector accepted'); }
+    $order = new TestOrder(); $order->billing = '07400123456';
+    try { TMS_Shiptimize_Fix::validate_blocks($order); throw new \RuntimeException('Wrong country accepted'); }
     catch (\Automattic\WooCommerce\StoreApi\Exceptions\RouteException $e) { check($order->saved, 0, 'Invalid phone not saved'); }
     $order = new TestOrder(); $order->billing = '912345678'; $order->regions['billing'] = 'PT'; $order->shipping = '123';
     try { TMS_Shiptimize_Fix::validate_blocks($order); throw new \RuntimeException('Invalid shipping accepted'); }
